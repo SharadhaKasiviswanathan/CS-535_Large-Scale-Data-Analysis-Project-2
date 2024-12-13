@@ -37,12 +37,12 @@ This project involves analyzing Wikipedia's graph structure to identify mutual l
    ```bash
    python prj2script.py
 
-UPDATE:
---> Please run the updated files: u.py is the EMR script, uep2.py is the entrypoint file, updatep2.py has the main code for project 1 and 2
+### UPDATE:
+->  Please run the updated files: u.py is the EMR script, uep2.py is the entrypoint file, updatep2.py has the main code for project 1 and 2
         Run the following command to execute the script non-interactively:
         ```bash
         python u.py
 
---> Please run the following command to execute the testing part in local machine, which I have updated and placed in the updtest.py file:  
+->  Please run the following command to execute the testing part in local machine, which I have updated and placed in the updtest.py file:  
     ```bash
     python -m unittest updtest.py
