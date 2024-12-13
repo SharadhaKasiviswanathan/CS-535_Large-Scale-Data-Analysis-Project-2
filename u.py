@@ -71,7 +71,7 @@ client.run_job_flow(
                 'Market': 'ON_DEMAND',
                 'InstanceRole': 'CORE',
                 'InstanceType': 'r6gd.2xlarge',
-                'InstanceCount': 4,
+                'InstanceCount': 1,
             },
         ],
         'KeepJobFlowAliveWhenNoSteps': False,
