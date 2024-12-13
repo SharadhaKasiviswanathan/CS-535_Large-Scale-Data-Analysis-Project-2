@@ -43,7 +43,6 @@ UPDATE:
         ```bash
         python u.py
 
---> Please run the following command to execute the testing part in local machine, which I have updated and placed in the updtest.py file:
-       
-       ```bash
-        python -m unittest updtest.py
+--> Please run the following command to execute the testing part in local machine, which I have updated and placed in the updtest.py file:  
+    ```bash
+    python -m unittest updtest.py
