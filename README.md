@@ -36,3 +36,5 @@ This project involves analyzing Wikipedia's graph structure to identify mutual l
 2. Run the following command to execute the script non-interactively:
    ```bash
    python prj2script.py
+
+Please run the updated files u.py is the EMR script, uep2 is the entrypoint file, updatep2.py has the main code for project 1 and 2
