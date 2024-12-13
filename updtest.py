@@ -13,7 +13,7 @@ class TestMutualLinksAndComponents(unittest.TestCase):
             .getOrCreate()
         )
 
-        # Load test data from JSON files (replace paths if necessary)
+        # Load test data from JSON files (replace paths if necessary from S3 Bucket)
         cls.dflt = cls.spark.read.json("C:/Users/Sharadha Kasi/Downloads/synthetic_testdata/linktarget.jsonl")
         cls.dfp = cls.spark.read.json("C:/Users/Sharadha Kasi/Downloads/synthetic_testdata/page.jsonl")
         cls.dfpl = cls.spark.read.json("C:/Users/Sharadha Kasi/Downloads/synthetic_testdata/pagelinks.jsonl")
@@ -30,7 +30,6 @@ class TestMutualLinksAndComponents(unittest.TestCase):
         cls.spark.stop()
 
     def mutual_links(self):
-        # Debugging and improved mutual_links logic
         print("Debugging mutual_links:")
 
         # Step 1: Filter pages with namespace 0
@@ -154,18 +153,93 @@ class TestMutualLinksAndComponents(unittest.TestCase):
         mutual_links_df.show()
         return mutual_links_df
 
+    def connected_components(self, mutual_links_df):
+        print("Starting connected_components function....")
+
+        # Step 1: Create bidirectional edges
+        edges = (
+            mutual_links_df
+            .selectExpr("page_a as src", "page_b as dst")
+            .union(mutual_links_df.selectExpr("page_b as src", "page_a as dst"))
+            .persist(StorageLevel.MEMORY_AND_DISK)
+        )
+        edges.createOrReplaceTempView("edges")
+
+        # Step 2: Initialize vertices
+        vertices = (
+            edges
+            .select(F.col("src").alias("vertex"))
+            .union(edges.select(F.col("dst").alias("vertex")))
+            .distinct()
+            .withColumn("component", F.col("vertex"))
+            .persist(StorageLevel.MEMORY_AND_DISK)
+        )
+
+        iteration = 0
+        changed_vertices = float("inf")
+
+        while changed_vertices > 0:
+            iteration += 1
+            print(f"Iteration {iteration}: Starting....")
+
+            propagated_components = (
+                edges.join(vertices, edges.src == vertices.vertex, "inner")
+                .select(F.col("dst").alias("vertex"), F.col("component"))
+                .union(vertices)
+                .groupBy("vertex")
+                .agg(F.min("component").alias("component"))
+                .persist(StorageLevel.MEMORY_AND_DISK)
+            )
+
+            changed_vertices = (
+                propagated_components.alias("propagated")
+                .join(vertices.alias("original"), "vertex")
+                .filter(F.col("propagated.component") != F.col("original.component"))
+                .count()
+            )
+
+            vertices.unpersist()
+            vertices = propagated_components
+            print(f"Iteration {iteration}: Changed vertices = {changed_vertices}")
+
+        vertices.createOrReplaceTempView("connected_components")
+        print("Final Connected Components:")
+        vertices.show()
+        return vertices
+
     def test_mutual_links(self):
-        """Test mutual_links function."""
         mutual_links_df = self.mutual_links()
         actual_links = frozenset(tuple(row) for row in mutual_links_df.collect())
 
-        # Example expected result for testing purpose
         expected_links = frozenset({
             (1, 8), (3, 9), (4, 8), (6, 9), (7, 10)
         })
         self.assertEqual(
             actual_links, expected_links,
             f"Mutual links mismatch. Expected: {expected_links}, Got: {actual_links}"
+        )
+
+    def test_connected_components(self):
+        mutual_links_df = self.mutual_links()
+        components_df = self.connected_components(mutual_links_df)
+
+        expected_components = frozenset({
+            frozenset({1, 8, 2}),
+            frozenset({3, 9, 4}),
+            frozenset({5, 6}),
+            frozenset({7, 10})
+        })
+
+        actual_components = frozenset(
+            frozenset(row.members)
+            for row in components_df.groupBy("component")
+            .agg(F.collect_list("vertex").alias("members"))
+            .collect()
+        )
+
+        self.assertEqual(
+            actual_components, expected_components,
+            f"Components mismatch. Expected: {expected_components}, Got: {actual_components}"
         )
 
 if __name__ == "__main__":
