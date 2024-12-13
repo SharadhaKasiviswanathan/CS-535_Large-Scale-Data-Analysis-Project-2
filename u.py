@@ -27,8 +27,8 @@ client.run_job_flow(
                     "Properties": {
                         # Change this to an s3 bucket in your account to test your code
                         "PAGE_PAIRS_OUTPUT": "s3://sharadhakasi/mutual_links"
-                        #"CS535_S3_WORKSPACE": "s3://CS535_S3_WORKSPACE/mutual_links" -- to be given when executed
-                        #"CS535_S3_WORKSPACE":"s3://CS535_S3_WORKSPACE/wikipedia_components"
+                        #"CS535_S3_WORKSPACE": "s3://sharadhakasi/mutual_links" -- to be given when executed
+                        #"CS535_S3_WORKSPACE":"s3://sharadhakasi/wikipedia_components"
                     },
                 },
             ],
@@ -100,8 +100,8 @@ client.run_job_flow(
                 "--py-files",
                 "s3://sharadhakasi/code/project2/updatep2.py",
                 "s3://sharadhakasi/code/project2/uep2.py",
-                #"s3://CS535_S3_WORKSPACE/code/updatep2.py"  -- to be given while execution
-                #"s3://CS535_S3_WORKSPACE/code/uep2.py"
+                #"s3://sharadhakasi/code/project2/updatep2.py"  -- to be given while execution
+                #"s3://sharadhakasi/code/project2/uep2.py"
             
             ],
         },
